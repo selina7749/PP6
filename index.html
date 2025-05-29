@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>來打柳星聞的PP</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #000000;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        #result, #timer {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        #result {
+            display: none;
+        }
+
+        #timer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <img id="mainImage" src="a.jpg" alt="圖像">
+    <div id="timer">倒數：10</div>
+    <div id="result"></div>
+
+    <script>
+        const mainImage = document.getElementById("mainImage");
+        const timerDisplay = document.getElementById("timer");
+        const resultText = document.getElementById("result");
+
+        const randomImages = ["b.jpg", "c.jpg", "d.jpg", "e.jpg", "f.jpg"];
+        const defaultImage = "a.jpg";
+        const finalImage = "g.jpg";
+
+        let hasStarted = false;
+        let clickCount = 0;
+        let countdown = 10;
+        let timer = null;
+        let countdownInterval = null;
+        let lastTouchTime = 0;
+
+        function onPress(e) {
+            const now = Date.now();
+
+            // 手機避免觸發 mousedown + touchstart 同時計算兩次
+            if (e.type === "mousedown" && now - lastTouchTime < 500) {
+                return; // 這是 touchstart 後緊接著的 mousedown，略過
+            }
+
+            if (e.type === "touchstart") {
+                lastTouchTime = now;
+                e.preventDefault(); // 阻止雙擊放大等預設行為
+            }
+
+            if (!hasStarted) {
+                startGame();
+            }
+
+            if (hasStarted && countdown > 0) {
+                clickCount++;
+                const rand = Math.floor(Math.random() * randomImages.length);
+                mainImage.src = randomImages[rand];
+            }
+        }
+
+        function onRelease(e) {
+            if (hasStarted && countdown > 0) {
+                mainImage.src = defaultImage;
+            }
+        }
+
+        function startGame() {
+            hasStarted = true;
+            clickCount = 0;
+            countdown = 10;
+            timerDisplay.textContent = `倒數：${countdown}`;
+            timerDisplay.style.display = "block";
+
+            countdownInterval = setInterval(() => {
+                countdown--;
+                timerDisplay.textContent = `倒數：${countdown}`;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            timer = setTimeout(() => {
+                endGame();
+            }, 10000);
+        }
+
+        function endGame() {
+            mainImage.src = finalImage;
+            resultText.style.display = "block";
+            resultText.textContent = `你打了柳星聞 ${clickCount} 次PP！`;
+            timerDisplay.style.display = "none";
+
+            // 解除事件
+            document.body.removeEventListener("mousedown", onPress);
+            document.body.removeEventListener("mouseup", onRelease);
+            document.body.removeEventListener("touchstart", onPress);
+            document.body.removeEventListener("touchend", onRelease);
+        }
+
+        // 綁定事件（只按下計數）
+        document.body.addEventListener("mousedown", onPress);
+        document.body.addEventListener("mouseup", onRelease);
+        document.body.addEventListener("touchstart", onPress, { passive: false });
+        document.body.addEventListener("touchend", onRelease);
+    </script>
+
+</body>
+</html>
